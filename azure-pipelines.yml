@@ -23,6 +23,7 @@ steps:
   inputs:
     workingDirectory: 'poc/android'
     gradleWrapperFile: 'poc/android/gradlew'
+    options: '--variant betadebug --appId com.beta'
     gradleOptions: '-Xmx3072m'
     publishJUnitResults: false
     testResultsFiles: '**/TEST-*.xml'
