@@ -1,0 +1,33 @@
+trigger:
+- main
+
+pool:
+  vmImage: ubuntu-latest
+
+steps:
+- task: NodeTool@0
+  displayName: 'Install Node'
+  inputs:
+    versionSpec: '12.16.1'
+
+- script: |
+    npm install
+    npm -v
+    npx react-native --version
+  workingDirectory: '$(Build.SourcesDirectory)/poc'
+  displayName: 'Install node dependencies'
+
+- script: |
+    gradle wrapper --version
+  workingDirectory: '$(Build.SourcesDirectory)/poc/android'
+  displayName: 'Gradle Version'
+
+- script: |
+    gradle assembleDev
+  workingDirectory: '$(Build.SourcesDirectory)/poc/android'
+  displayName: 'Dev APK'
+  
+- script: |
+    gradle assembleBeta
+  workingDirectory: '$(Build.SourcesDirectory)/poc/android'
+  displayName: 'Beta APK'
