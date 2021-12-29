@@ -1,8 +1,10 @@
+# Node.js with React
+
 trigger:
 - main
 
 pool:
-  vmImage: ubuntu-latest
+  vmImage: windows-latest
 
 steps:
 - task: NodeTool@0
@@ -12,22 +14,93 @@ steps:
 
 - script: |
     npm install
-    npm -v
-    npx react-native --version
   workingDirectory: '$(Build.SourcesDirectory)/poc'
   displayName: 'Install node dependencies'
 
-- script: |
-    gradle wrapper --version
-  workingDirectory: '$(Build.SourcesDirectory)/poc/android'
-  displayName: 'Gradle Version'
+# Check Versions
+# - script: |
+#     npm -v
+#     npx react-native --version
+#     gradle wrapper --version
+#   workingDirectory: '$(Build.SourcesDirectory)/poc/android'
+#   displayName: 'Versions'
 
+
+
+
+# Publish Dev Debug
 - script: |
-    gradle assembleDev
+    SET ENVFILE=config/.env.dev & gradle assembleDevDebug
   workingDirectory: '$(Build.SourcesDirectory)/poc/android'
-  displayName: 'Dev APK'
-  
+  displayName: 'Dev Debug APK'
+# Publish Dev Release
 - script: |
-    gradle assembleBeta
+    SET ENVFILE=config/.env.dev & gradle assembleDevRelease
   workingDirectory: '$(Build.SourcesDirectory)/poc/android'
-  displayName: 'Beta APK'
+  displayName: 'Dev Release APK'
+
+# Publish Beta Debug
+- script: |
+    SET ENVFILE=config/.env.beta & gradle assembleBetaDebug
+  workingDirectory: '$(Build.SourcesDirectory)/poc/android'
+  displayName: 'Beta Debug APK'
+# Publish Beta Release
+- script: |
+    SET ENVFILE=config/.env.beta & gradle assembleBetaRelease
+  workingDirectory: '$(Build.SourcesDirectory)/poc/android'
+  displayName: 'Beta Release APK'
+
+
+
+
+
+
+
+
+
+# Publish Dev Release And Debug
+# - script: |
+#     gradle assembleDev
+#   workingDirectory: '$(Build.SourcesDirectory)/poc/android'
+#   displayName: 'Dev APK'
+
+- task: AndroidSigning@3
+  inputs:
+    apkFiles: 'poc/android/app/build/outputs/apk/dev/release/app-dev-release.apk'
+    apksignerKeystoreFile: 'poc.keystore'
+    apksignerKeystorePassword: 'pocpoc'
+    apksignerKeystoreAlias: 'poc'
+    apksignerKeyPassword: 'pocpoc'
+
+
+
+# Publish Beta Release And Debug
+# - script: |
+#     gradle assembleBeta
+#   workingDirectory: '$(Build.SourcesDirectory)/poc/android'
+#   displayName: 'Beta APK'
+- task: AndroidSigning@3
+  inputs:
+    apkFiles: 'poc/android/app/build/outputs/apk/beta/release/app-beta-release.apk'
+    apksignerKeystoreFile: 'poc.keystore'
+    apksignerKeystorePassword: 'pocpoc'
+    apksignerKeystoreAlias: 'poc'
+    apksignerKeyPassword: 'pocpoc'
+
+
+
+- task: CopyFiles@2
+  displayName: CopyFiles
+  inputs:
+    targetFolder: '$(Build.ArtifactStagingDirectory)'    
+
+- task: PublishBuildArtifacts@1    
+  displayName: 'Publish Artifact'
+  inputs:
+    PathtoPublish: '$(build.artifactstagingdirectory)/poc/android/app/build/outputs/apk'
+
+
+
+
+
+
